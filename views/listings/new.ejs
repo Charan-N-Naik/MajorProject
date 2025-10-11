@@ -1,0 +1,55 @@
+<% layout("/layouts/boilerplate") %>
+<body>
+    <!-- heare row div make the all the comtent in singele row and all the row take only the 8 colms and add  the offset mens space from left -->
+    <div class="row">
+        <div class="col-8 offset-2"> 
+            <br>
+        <h1>Create New Listing</h1>
+        <form method="POST" action="/listings">
+            <div class="mb-3">
+                <label for="title" class="form-label">Title</label>
+                <input name="listing[title]" class="form-control" type="text" />
+            </div>
+
+            <div class="mb-3">
+                <label for="description" class="form-label">description</label>
+                <textarea name="listing[description]" class="form-control"></textarea>
+            </div>
+
+            <div class="mb-3">
+                <label for="image" class="form-label">image link</label>
+                <input name="listing[image]" placeholder="enter image URL/Link" type="text" class="form-control" />
+            </div >
+            <div class="row">
+                
+                <div class="mb-3 col-md-4">
+                    <label for="price" class="form-label">Price</label>
+                    <input name="listing[price]" placeholder="enter price" type="number"  class="form-control" />
+                </div>
+                
+                <div class="mb-3 col-md-8">
+                    <label for="country" class="form-label">country</label>
+                    <input name="listing[country]" placeholder="enter country" type="text"  class="form-control" />
+                </div>
+               
+            </div>
+            <div class="mb-3">
+                <label for="location" class="form-label">location</label>
+                <input name="listing[location]" placeholder="enter location" type="text"  class="form-control" />
+            </div>
+            <br>
+            
+            <button class="btn btn-dark add-btn">add</button>
+            
+
+            <!-- heare we are creating the key value pair means object -->
+        </form>
+        <!-- When the form is submitted, the browser sends key–value pairs like: -->
+        <!-- listing[title]=Cozy%20Room
+        listing[price]=5000
+        listing[country]=India 
+        Express’s built-in urlencoded parser (which you enable using app.use(express.urlencoded({ extended: true }))) automatically converts that bracket notation into a nested JavaScript object.-->
+        <br>    
+    </div>
+    </div>
+</body>
