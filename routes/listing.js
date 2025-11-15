@@ -124,5 +124,4 @@ router.delete("/:id",wrapAsyc(async (req,res)=>{
   res.redirect("/listing");
 }))
 
-
 module.exports=router;
