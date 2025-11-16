@@ -30,9 +30,11 @@ const {listingSchema,reviewSchema}=require("./schema.js")// important think is t
 
 
 // requireing the Express Listing router
-const listing=require("./routes/listing.js")
+const listingsRoutes=require("./routes/listing.js")
 // requireing the Express Review router
-const reviews=require("./routes/reviews.js")
+const reviewsRoutes=require("./routes/reviews.js")
+
+const userRoutes=require("./routes/user.js")
 
 
 
@@ -51,6 +53,15 @@ const sesseionOptions={
 
 const session=require("express-session")
 const flash=require("connect-flash")
+
+
+// authonthication and authorization
+
+const passport=require("passport")
+const LocalStrategy=require("passport-local")
+const User=require("./model/user.js");
+const { register } = require("./model/review.js");
+
 
 
 
@@ -85,23 +96,58 @@ app.use(express.static(path.join(__dirname,"public")))
 app.get("/",(req,res)=>{
   res.send("Welcome to root directry")
 })
+
+// session and flash
 app.use(session(sesseionOptions))
 app.use(flash());
+
+
+// authonthication and authorization
+app.use(passport.initialize());//  to inintialize the before we use
+app.use(passport.session());// refere notes
+passport.use(new LocalStrategy(User.authenticate()))/// to authonticate the user data
+passport.serializeUser(User.serializeUser());// userd to save serialized data when user in session
+passport.deserializeUser(User.deserializeUser());// user get desirealized alll data of user get removed from session
+
+
+
+
 
 
 app.use((req,res,next)=>{
   res.locals.success=req.flash("success");
   res.locals.error=req.flash("error");
-  console.log(res.locals.success); // this one is the array we need tocheck empty candition also
+  // console.log(res.locals.success); // this one is the array we need tocheck empty candition also
   next();
 });
 
 
+
+
+
+
+
+
+
 // Routers
+// // Demo user
+// app.use("/demoUser",async(req,res)=>{
+//   let fakeuser=new User({
+//     email:"student@gmail.com",
+//     username:"apnacollege_std90"// here in User Schema we are not defined username username automatically created by passport-local-mongoose this add the username and passeword as automatically in UserSchema 
+//   });
+
+//   const regesteredUser=await User.register(fakeuser,"password");
+//   res.send(regesteredUser)
+// });
+
+// user signup routes
+app.use("/",userRoutes);
+
 // useing the listing routers
-app.use("/listing",listing);
+app.use("/listing",listingsRoutes);
 // useing the review routers
-app.use("/listings/:id/reviews",reviews)
+app.use("/listings/:id/reviews",reviewsRoutes)
 // refere express website under router
 //mergeParams	Preserve the req.params values from the parent router(/listings/:id/reviews). If the parent and the child have conflicting param names, the child’s value take precedence.
 // defout mergeParams is False
