@@ -6,26 +6,23 @@ const wrapAsyc=require("../utils/wrapAsyc");
 const Listing=require("../model/listing");
 // requireing the review model
 const Review=require("../model/review.js");
-const expressError=require("../utils/expressError");
+const {validatereview}=require("../middlewares/ReviewValidate.js")
 
+const {isloggedin}=require("../middlewares/islogedin.js")
 
-// server side validation middleware for the review
-const validatereview = (req, res, next) => {
-  const { error } = reviewSchema.validate(req.body);
-  if (error) {
-    const errmsg = error.details.map(el => el.message).join(",");
-    throw new expressError(400, errmsg);
-  } else {
-    next();
-  }
-};
 
 
 // review route one to many
-router.post("/",validatereview,wrapAsyc(async(req,res)=>{
+router.post("/",
+  isloggedin,
+  validatereview,
+  wrapAsyc(async(req,res)=>{
     let listing= await Listing.findById(req.params.id);
     let newReview=new Review(req.body.review)
+    newReview.author=req.user._id;
+    // console.log(newReview.author);
     listing.reviews.push(newReview);
+    console.log(newReview);
     await listing.save();
     await newReview.save();
     // console.log("revew added")
@@ -36,7 +33,8 @@ router.post("/",validatereview,wrapAsyc(async(req,res)=>{
 
 // review delete route
 
-router.delete("/:reviewId",wrapAsyc(async(req,res)=>{
+router.delete("/:reviewId",
+  wrapAsyc(async(req,res)=>{
   let {id,reviewId}=req.params;
   await Listing.findByIdAndUpdate(id,{$pull:{reviews:reviewId}});
   await Review.findByIdAndDelete(reviewId);

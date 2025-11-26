@@ -33,7 +33,7 @@ const {listingSchema,reviewSchema}=require("./schema.js")// important think is t
 const listingsRoutes=require("./routes/listing.js")
 // requireing the Express Review router
 const reviewsRoutes=require("./routes/reviews.js")
-
+// requireing the exoress user router
 const userRoutes=require("./routes/user.js")
 
 
@@ -105,7 +105,7 @@ app.use(flash());
 // authonthication and authorization
 app.use(passport.initialize());//  to inintialize the before we use
 app.use(passport.session());// refere notes
-passport.use(new LocalStrategy(User.authenticate()))/// to authonticate the user data
+passport.use(new LocalStrategy(User.authenticate()))///  “Use the local username/password login system, and let the User model (with passport-local-mongoose) handle authentication.” to authonticate the user data
 passport.serializeUser(User.serializeUser());// userd to save serialized data when user in session
 passport.deserializeUser(User.deserializeUser());// user get desirealized alll data of user get removed from session
 
@@ -118,6 +118,7 @@ app.use((req,res,next)=>{
   res.locals.success=req.flash("success");
   res.locals.error=req.flash("error");
   // console.log(res.locals.success); // this one is the array we need tocheck empty candition also
+  res.locals.currUser=req.user;
   next();
 });
 

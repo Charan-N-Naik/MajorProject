@@ -7,5 +7,12 @@ const userSchema=mongoose.Schema({
         required:true
     }
 })
+// ✔ username field
+// ✔ password hashing
+// ✔ salting
+// ✔ authentication methods
+// ✔ register(), authenticate(), serializeUser(), deserializeUser()
+
+// You do NOT store passwords manually — it handles everything.
 userSchema.plugin(passportLocalMongoose)
 module.exports=mongoose.model("User",userSchema);

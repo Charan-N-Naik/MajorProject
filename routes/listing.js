@@ -2,19 +2,8 @@ const express=require("express");
 const router=express.Router();
 const Listing=require("../model/listing");
 const wrapAsyc=require("../utils/wrapAsyc");
-const expressError=require("../utils/expressError");
-const {listingSchema,reviewSchema}=require("../schema.js")
-
-// server side validation for listing
-const validateListing = (req, res, next) => {
-  const { error } = listingSchema.validate(req.body);
-  if (error) {
-    const errmsg = error.details.map(el => el.message).join(",");
-    throw new expressError(400, errmsg);
-  } else {
-    next();
-  }
-};
+const {isloggedin,isOwner}=require("../middlewares/islogedin.js")
+const {validateListing}=require("../middlewares/listValidation.js")
 
 
 //index route
@@ -28,18 +17,31 @@ router.get("/",wrapAsyc(async (req,res)=>{
 
 //get and post new list
 // new route
-router.get("/new",(req,res)=>{
+router.get("/new",isloggedin,(req,res)=>{
+  // console.log(req.user)// store the all the information about user this user will trigger the is autontication
+  // if(!req.isAuthenticated()){
+  //   req.flash("error","you must be logedin to create listings")
+  //   return res.redirect("/login")
+  // }
   res.render("listings/new.ejs")
 })
 
 // show route
 router.get("/:id", wrapAsyc(async(req,res)=>{
   const {id} =req.params;
-  const list=await Listing.findById(id).populate("reviews");
+  const list=await Listing.findById(id)
+  .populate({
+    path:"reviews",
+    populate:{
+      path:"author"
+    }
+  })
+  .populate("owner");
   if(!list){
     req.flash("error","Listing does not exists");
     return res.redirect("/listing"); 
   }
+  // console.log(list)
   res.render("listings/show.ejs",{list})
   // console.log(user,);
 }))
@@ -47,6 +49,7 @@ router.get("/:id", wrapAsyc(async(req,res)=>{
 
 // create 
 router.post("/",
+  isloggedin,
   validateListing,// middleware
  wrapAsyc (async(req,res)=>{
     // let {title,description,image,price,country,location}=req.body;
@@ -81,13 +84,19 @@ router.post("/",
 
     // const result=listingSchema.validate(req.body);// using single line we can validate the above enaire schema
     // console.log(result);
-    await new Listing(req.body.listing).save();// if listing is not send or not exist then we are giveing the 400 this is the bad requst 
+    const newListing=new Listing(req.body.listing);// if listing is not send or not exist then we are giveing the 400 this is the bad requst 
+    console.log(req.user)
+    newListing.owner=req.user._id;//Authorization
+    await newListing.save();
     req.flash("success","new Listing is created");
     res.redirect("/listing")
 }))
 
 // edit Route
-router.get("/:id/edit",wrapAsyc(async (req,res)=>{
+router.get("/:id/edit",
+  isloggedin,
+  isOwner,// Authorization 
+  wrapAsyc(async (req,res)=>{
   const {id}=req.params;
   const listtoedit= await Listing.findById(id);
   // console.log(listtoedit);
@@ -102,6 +111,8 @@ router.get("/:id/edit",wrapAsyc(async (req,res)=>{
 
 // update Routes
 router.put("/:id",
+  isloggedin,// Authonthicate
+  isOwner,// Authorization 
   validateListing,
   wrapAsyc(async(req,res)=>{
   let {id}=req.params;
@@ -109,14 +120,16 @@ router.put("/:id",
   // let listing=req.body.listing
   // console.log(listing)
   await Listing.findByIdAndUpdate(id,{...req.body.listing})
-  
   req.flash("success","Listing is updated");
   res.redirect(`/listing/${id}`)
 }))
 
 
 // delete route
-router.delete("/:id",wrapAsyc(async (req,res)=>{
+router.delete("/:id",
+  isloggedin,
+  isOwner,// Authorization 
+  wrapAsyc(async (req,res)=>{
   const {id}=req.params;
   let deleteItem=await Listing.findByIdAndDelete(id);
   console.log(deleteItem);
