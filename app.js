@@ -1,17 +1,25 @@
 const express=require("express");
 const app=express();
+require('dotenv').config();
 
 const methodOverrid=require("method-override");
 const ejsMate=require("ejs-mate");
 app.engine("ejs",ejsMate);// to specify the engine for ejs as ejemate
 // seting mongo db
 const mongoose = require('mongoose');
-const MOGO_URL='mongodb://127.0.0.1:27017/wonderlust'
+
+
+// const MOGO_URL='mongodb://127.0.0.1:27017/wonderlust'
+
+const DB_URL=process.env.ATLAS_DB_URL;
+
+
+
 main()
 .then(()=>console.log("connected to DB"))
 .catch((err)=>console.log(err));
 async function main() {
-  await  mongoose.connect(MOGO_URL);
+  await  mongoose.connect(DB_URL);
 }
 
 // seting ejs
@@ -36,22 +44,47 @@ const reviewsRoutes=require("./routes/reviews.js")
 // requireing the exoress user router
 const userRoutes=require("./routes/user.js")
 
+/// SESSION MONGO STORE
+const session = require("express-session");
+const MongoStore = require("connect-mongo");
 
+// const store = MongoStore.create({
+//   mongoUrl: dburl,
+//   crypto: {
+//     secret: "mySuperSecretString",
+//   },
+//   touchAfter: 24 * 3600,
+// });
 
-// seseions
-const sesseionOptions={
-  secret:"mySuperSeacreateString",
-  resave:false,
-  saveUninitialized:true,
-  cookie:{
-    expires:Date.now() + 7*24*60*60*1000,
-    maxAge:7*24*60*60*1000,
-    httpOnly:true,
+// // FIX ERROR HANDLER (important)
+
+const store = MongoStore.create({
+    mongoUrl: DB_URL,
+    touchAfter: 24 * 3600 // for Lazy Update
+});
+store.on("error", (err) => {
+  console.log("ERROR in MONGO STORE:", err);
+});
+
+// SESSION OPTIONS
+const sessionOptions = {
+   store,
+  secret: process.env.SECRET,
+  resave: false,
+  saveUninitialized: true,
+  cookie: {
+    httpOnly: true,
+    expires: Date.now() + 7 * 24 * 60 * 60 * 1000,
+    maxAge: 7 * 24 * 60 * 60 * 1000,
   },
 };
 
 
-const session=require("express-session")
+
+
+
+
+
 const flash=require("connect-flash")
 
 
@@ -61,6 +94,7 @@ const passport=require("passport")
 const LocalStrategy=require("passport-local")
 const User=require("./model/user.js");
 const { register } = require("./model/review.js");
+const { error } = require("console");
 
 
 
@@ -93,12 +127,12 @@ app.use(express.static(path.join(__dirname,"public")))
 
 
 
-app.get("/",(req,res)=>{
-  res.send("Welcome to root directry")
-})
+// app.get("/",(req,res)=>{
+//   res.send("Welcome to root directry")
+// })
 
 // session and flash
-app.use(session(sesseionOptions))
+app.use(session(sessionOptions))
 app.use(flash());
 
 
@@ -193,7 +227,7 @@ app.use((err, req, res, next) => {
 
 
 
-app.listen(8080, () => {
-  console.log("Server is started at 8080");
+app.listen(process.env.PORT || 8080, () => {
+  console.log(`Server is started at port ${process.env.PORT || 8080}`);
 });
 // useing the ejs-mate for the styleing

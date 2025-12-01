@@ -1,5 +1,10 @@
 
 const Listing=require("../model/listing");
+const mbxgeoCoding = require('@mapbox/mapbox-sdk/services/geocoding');
+const mapToken=process.env.MAP_TOKEN
+
+const geocodingClient = mbxgeoCoding({ accessToken: mapToken });
+
 
 module.exports.index=async (req,res)=>{
   const allListings=await Listing.find({})
@@ -71,16 +76,32 @@ module.exports.createListing=async(req,res)=>{
 
     // const result=listingSchema.validate(req.body);// using single line we can validate the above enaire schema
     // console.log(result);
-    let url=req.file.path;
-    let filename=req.file.filename;
-    // console.log(url,"....",filename)
-    const newListing=new Listing(req.body.listing);// if listing is not send or not exist then we are giveing the 400 this is the bad requst 
-    newListing.image={filename,url}
-    console.log(req.user)
-    newListing.owner=req.user._id;//Authorization
-    await newListing.save();
-    req.flash("success","new Listing is created");
-    res.redirect("/listing")
+
+  // forword geo coding
+  let cordinates=await geocodingClient.forwardGeocode({
+    query: req.body.listing.location,
+    limit: 1
+  })
+  .send();
+  // console.log(cordinates);
+  //  console.log(cordinates.body.features[0].geometry);
+  // res.send(cordinates);
+
+
+  // image upoading
+  let url=req.file.path;
+  let filename=req.file.filename;
+  // console.log(url,"....",filename)
+  const newListing=new Listing(req.body.listing);// if listing is not send or not exist then we are giveing the 400 this is the bad requst 
+  newListing.image={filename,url}
+  console.log(req.user)
+  newListing.owner=req.user._id;//Authorization
+
+  newListing.geometry=cordinates.body.features[0].geometry
+  let savedListing=await newListing.save();
+  console.log(savedListing);
+  req.flash("success","new Listing is created");
+  res.redirect("/listing")
 };
 
 
@@ -93,8 +114,11 @@ module.exports.renderEditForm=async (req,res)=>{
     req.flash("error","Listing does not exists");
     return res.redirect("/listing"); 
   }
-  req.flash("success","Listing is edited");
-  res.render("listings/edit.ejs",{listtoedit})
+  let orginalimg=listtoedit.image.url;
+  
+  let resizedimg= orginalimg.replace("/upload","/upload/ar_1.0,c_fill,w_300,h_250/bo_5px_solid_lightblue")
+  
+  res.render("listings/edit.ejs",{listtoedit,resizedimg})
 };
 
 module.exports.updateListing=async(req,res)=>{
@@ -102,7 +126,15 @@ module.exports.updateListing=async(req,res)=>{
   // console.log(id)
   // let listing=req.body.listing
   // console.log(listing)
-  await Listing.findByIdAndUpdate(id,{...req.body.listing})
+ 
+  let updatedListing= await Listing.findByIdAndUpdate(id,{...req.body.listing})
+
+  if(typeof(req.file)!=="undefined"){
+    let url=req.file.path;
+    let filename=req.file.filename;
+    updatedListing.image={filename,url}
+    updatedListing.save(); 
+  }
   req.flash("success","Listing is updated");
   res.redirect(`/listing/${id}`)
 };

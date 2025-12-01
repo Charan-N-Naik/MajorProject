@@ -14,7 +14,7 @@ body {
 
 .navbar{
     height: 5rem;
-    background-color: rgb(240, 232, 217);
+    background-color: rgb(249, 244, 244);
 }
 
 .fa-compass{
@@ -113,4 +113,13 @@ body {
 .show-edit{
     border: none !important;
     background-color: #fe424d !important;
+}
+
+
+/* MAP Styleing */
+
+
+#map{
+    height: 400px;
+    width: 80vh;
 }

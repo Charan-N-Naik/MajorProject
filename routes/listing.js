@@ -75,8 +75,8 @@ router.route("/")
 .get(wrapAsyc(listingControll.index))
 .post(
   isloggedin,
-  validateListing,// middleware
   upload.single('listing[image]'),// processs the file and passs the data to the req.file
+  validateListing,// middleware
   wrapAsyc (listingControll.createListing)
 );
 // .post( upload.single('listing[image]'),(req,res)=>{
@@ -105,10 +105,11 @@ router.route("/:id")
   isloggedin,// Authonthicate
   isOwner,// Authorization 
   validateListing,
+  upload.single('listing[image]'), 
   wrapAsyc(listingControll.updateListing))
 .delete(
   isloggedin,
-  isOwner,// Authorization 
+  isOwner,// Authorization
   wrapAsyc(listingControll.destroyListing)
 );
 

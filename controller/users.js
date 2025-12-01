@@ -48,7 +48,7 @@ module.exports.login= async (req,res)=>{// passing the autonticate the user as i
 module.exports.logout=(req,res,next)=>{
     req.logOut((err)=>{
         if(err){
-         next();
+        return  next();
         }
         req.flash("success","successfully logged Out!");
         res.redirect("/listing")

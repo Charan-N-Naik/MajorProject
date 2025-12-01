@@ -1,4 +1,4 @@
-/* Basic nav-link styling */
+/* Basic nav-link styling
 .navbar-nav .nav-link {
   position: relative;
   padding: 10px 18px;
@@ -7,21 +7,21 @@
   color: #333;
   transition: color 0.3s ease, transform 0.25s ease;
   overflow: hidden; /* required for border animation */
-}
+/* } */
 
 /* Fade-in animation */
-@keyframes fadeIn {
+/* @keyframes fadeIn {
   from { opacity: 0; transform: translateY(-6px); }
   to { opacity: 1; transform: translateY(0); }
-}
+} */
 
-.navbar-nav .nav-link {
+/* .navbar-nav .nav-link {
   animation: fadeIn 0.7s ease forwards;
   opacity: 0;
-}
+} */
 
 /* Border animation using ::before and ::after */
-.navbar-nav .nav-link::before,
+/* .navbar-nav .nav-link::before,
 .navbar-nav .nav-link::after {
   content: "";
   position: absolute;
@@ -31,22 +31,22 @@
   opacity: 0;
   transform: scale(0.7);
   transition: transform 0.3s ease, opacity 0.3s ease;
-}
+} */
 
 /* Hover border effect */
-.navbar-nav .nav-link:hover::before,
+/* .navbar-nav .nav-link:hover::before,
 .navbar-nav .nav-link:hover::after {
   opacity: 1;
   transform: scale(1);
-}
+} */
 
-/* Hover zoom + color change */
+/* Hover zoom + color change
 .navbar-nav .nav-link:hover {
   color: #0d6efd;
   transform: scale(1.08);
-}
+} */
 
 /* Spacing between items */
-.navbar-nav .nav-item {
+/* .navbar-nav .nav-item {
   margin: 0 4px;
-}
+} */ 
