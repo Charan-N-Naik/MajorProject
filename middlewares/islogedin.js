@@ -1,5 +1,5 @@
 const Listing=require("../model/listing")
-
+const Review =require("../model/review")
 module.exports.isloggedin=(req,res,next)=>{
 
     // console.log(req.path  ,".....",req.originalUrl)
@@ -30,5 +30,16 @@ module.exports.isOwner=async(req,res,next)=>{
         return res.redirect(`/listing/${id}`)
     }
     next()
+
+}
+
+module.exports.isReviewAuthor=async(req,res,next)=>{
+    const {id,reviewId} =req.params;
+    let review=await Review.findById(reviewId);
+    if(!review.author._id.equals(res.locals.currUser._id)){
+        req.flash("error","you not a author  of this review");
+        return res.redirect(`/listing/${id}`)
+    }
+    next();
 
 }

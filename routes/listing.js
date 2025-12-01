@@ -1,140 +1,116 @@
+
+//cloudenary 
+if(process.env.NODE_ENV!="production"){
+  require('dotenv').config()
+}
+
+// console.log(process.env) // remove this after you've confirmed it is working
+
+
 const express=require("express");
 const router=express.Router();
 const Listing=require("../model/listing");
 const wrapAsyc=require("../utils/wrapAsyc");
 const {isloggedin,isOwner}=require("../middlewares/islogedin.js")
 const {validateListing}=require("../middlewares/listValidation.js")
+const listingControll=require("../controller/listings.js")
+const {storage,cloudinary}=require("../CloudConfig.js")
+//image uploading
+const multer  = require('multer')
+// const upload = multer({ dest: 'uploads/' })
 
 
-//index route
-router.get("/",wrapAsyc(async (req,res)=>{
-  const allListings=await Listing.find({})
-  // .then((res)=>console.log(res))
-  // .catch(err=>console.log(err))
-  // console.log(allListings)
-  res.render("listings/index",{allListings})
-}))
+//storeing 
 
-//get and post new list
-// new route
-router.get("/new",isloggedin,(req,res)=>{
-  // console.log(req.user)// store the all the information about user this user will trigger the is autontication
-  // if(!req.isAuthenticated()){
-  //   req.flash("error","you must be logedin to create listings")
-  //   return res.redirect("/login")
-  // }
-  res.render("listings/new.ejs")
-})
-
-// show route
-router.get("/:id", wrapAsyc(async(req,res)=>{
-  const {id} =req.params;
-  const list=await Listing.findById(id)
-  .populate({
-    path:"reviews",
-    populate:{
-      path:"author"
-    }
-  })
-  .populate("owner");
-  if(!list){
-    req.flash("error","Listing does not exists");
-    return res.redirect("/listing"); 
-  }
-  // console.log(list)
-  res.render("listings/show.ejs",{list})
-  // console.log(user,);
-}))
+const upload = multer({storage});
 
 
-// create 
-router.post("/",
+
+// //index route
+// router.get("/",
+//   wrapAsyc(listingControll.index))
+
+// //get and post new list
+// // new route
+// router.get("/new",
+//   isloggedin,
+//   listingControll.renderNewForm);
+
+
+// // show route
+// router.get("/:id", 
+//   wrapAsyc(listingControll.showListing));
+
+
+// // create 
+// router.post("/",
+//   isloggedin,
+//   validateListing,// middleware
+//   wrapAsyc (listingControll.createListing));
+
+// // edit Route
+// router.get("/:id/edit",
+//   isloggedin,
+//   isOwner,// Authorization 
+//   wrapAsyc(listingControll.renderEditForm));
+
+
+// // update Routes
+// router.put("/:id",
+//   isloggedin,// Authonthicate
+//   isOwner,// Authorization 
+//   validateListing,
+//   wrapAsyc(listingControll.updateListing));
+
+
+// // delete route
+// router.delete("/:id",
+//   isloggedin,
+//   isOwner,// Authorization 
+//   wrapAsyc(listingControll.destroyListing));
+
+
+
+router.route("/")
+.get(wrapAsyc(listingControll.index))
+.post(
   isloggedin,
   validateListing,// middleware
- wrapAsyc (async(req,res)=>{
-    // let {title,description,image,price,country,location}=req.body;
-    // console.log({title,description,image,price,country,location})
-    // short hand to parsing the data
+  upload.single('listing[image]'),// processs the file and passs the data to the req.file
+  wrapAsyc (listingControll.createListing)
+);
+// .post( upload.single('listing[image]'),(req,res)=>{
+//   res.send(req.file);
+//   // req.file contain this all 
+//   // {"fieldname":"listing[image]","originalname":"WIN_20250702_13_11_34_Pro.mp4","encoding":"7bit","mimetype":"video/mp4","destination":"uploads/","filename":"1135e3794272e30a8d26414edd395c7f","path":"uploads\\1135e3794272e30a8d26414edd395c7f","size":879676}
+// });
+ 
+ 
+router.get("/new",
+  isloggedin,
+  listingControll.renderNewForm
+);
 
-    // let listing=req.body.listing;
-    // console.log(listing)
-    // if(!req.body.listing){
-    //   throw new expressError(400,"Send valid data for listing")
-    // }
-    
-    // if(!newListing.description){
-    //   throw new expressError(400,"description is missing")
-    // }
-    // if(!newListing.title){
-    //   throw new expressError(400,"title is missing")
-    // }
-    // if(!newListing.location){
-    //   throw new expressError(400,"location is missing")
-    // }
-
-    // for the about one we need to validate many think 
-    // that why we are useing the tool is JOY(it validate the schema)
-
-    // using joi 
-    // const result = listingSchema.validate(req.body);
-    // if(result.error){
-    //   throw new expressError(400,result.error);
-    // }
-    //converting the validatelisting into middeleware
-
-    // const result=listingSchema.validate(req.body);// using single line we can validate the above enaire schema
-    // console.log(result);
-    const newListing=new Listing(req.body.listing);// if listing is not send or not exist then we are giveing the 400 this is the bad requst 
-    console.log(req.user)
-    newListing.owner=req.user._id;//Authorization
-    await newListing.save();
-    req.flash("success","new Listing is created");
-    res.redirect("/listing")
-}))
-
-// edit Route
+// update
 router.get("/:id/edit",
   isloggedin,
   isOwner,// Authorization 
-  wrapAsyc(async (req,res)=>{
-  const {id}=req.params;
-  const listtoedit= await Listing.findById(id);
-  // console.log(listtoedit);
-  if(!listtoedit){
-    req.flash("error","Listing does not exists");
-    return res.redirect("/listing"); 
-  }
-  req.flash("success","Listing is edited");
-  res.render("listings/edit.ejs",{listtoedit})
-}))
+  wrapAsyc(listingControll.renderEditForm)
+);
 
 
-// update Routes
-router.put("/:id",
+router.route("/:id")
+.get(wrapAsyc(listingControll.showListing))
+.put(
   isloggedin,// Authonthicate
   isOwner,// Authorization 
   validateListing,
-  wrapAsyc(async(req,res)=>{
-  let {id}=req.params;
-  // console.log(id)
-  // let listing=req.body.listing
-  // console.log(listing)
-  await Listing.findByIdAndUpdate(id,{...req.body.listing})
-  req.flash("success","Listing is updated");
-  res.redirect(`/listing/${id}`)
-}))
-
-
-// delete route
-router.delete("/:id",
+  wrapAsyc(listingControll.updateListing))
+.delete(
   isloggedin,
   isOwner,// Authorization 
-  wrapAsyc(async (req,res)=>{
-  const {id}=req.params;
-  let deleteItem=await Listing.findByIdAndDelete(id);
-  console.log(deleteItem);
-  req.flash("success","Listing get deleted");
-  res.redirect("/listing");
-}))
+  wrapAsyc(listingControll.destroyListing)
+);
+
 
 module.exports=router;
