@@ -45,6 +45,26 @@
                     <input name="listing[location]" value="<%=listtoedit.location%>" type="text" class="form-control" required/>
                     <div class="invalid-feedback">location should be valid</div>
                 </div>
+                <div class="mb-3">
+                    <label for="category" class="form-label">choose a category</label>
+                    <select id="category" name="listing[categerory]" class="form-select" aria-label="Default select example" required>
+                        <option value="">Select a category</option>
+                        <option value="Treanding" <% if(listtoedit.categerory === "Treanding") { %>selected<% } %>>Trending</option>
+                        <option value="Rooms" <% if(listtoedit.categerory === "Rooms") { %>selected<% } %>>Rooms</option>
+                        <option value="Iconic Cities" <% if(listtoedit.categerory === "Iconic Cities") { %>selected<% } %>>Iconic Cities</option>
+                        <option value="Mountain" <% if(listtoedit.categerory === "Mountain") { %>selected<% } %>>Mountain</option>
+                        <option value="Camping" <% if(listtoedit.categerory === "Camping") { %>selected<% } %>>Camping</option>
+                        <option value="Castle" <% if(listtoedit.categerory === "Castle") { %>selected<% } %>>Castle</option>
+                        <option value="Pools" <% if(listtoedit.categerory === "Pools") { %>selected<% } %>>Pools</option>
+                        <option value="Farms" <% if(listtoedit.categerory === "Farms") { %>selected<% } %>>Farms</option>
+                        <option value="Arctic" <% if(listtoedit.categerory === "Arctic") { %>selected<% } %>>Arctic</option>
+                        <option value="Beach" <% if(listtoedit.categerory === "Beach") { %>selected<% } %>>Beach</option>
+                        <option value="Desert" <% if(listtoedit.categerory === "Desert") { %>selected<% } %>>Desert</option>
+                        <option value="Forest" <% if(listtoedit.categerory === "Forest") { %>selected<% } %>>Forest</option>
+                        <option value="Sports" <% if(listtoedit.categerory === "Sports") { %>selected<% } %>>Sports</option>
+                    </select>
+                    <div class="invalid-feedback">please select a category</div>
+                </div>
                 <button class="btn btn-dark edit-btn mt-3">Edit</button>
             </form>
            <br>

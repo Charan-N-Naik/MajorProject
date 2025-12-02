@@ -48,6 +48,11 @@ const listingSchema = new Schema({
       type: [Number],
       required: true
     }
+  },
+  categerory: {
+    type: String,
+    enum: ['Treanding', 'Rooms', 'Iconic Cities', 'Mountain', 'Camping', 'Castle', 'Pools', 'Farms', 'Arctic', 'Beach', 'Desert', 'Forest', 'Sports'],
+    default: 'Hotel'
   }
 });
 

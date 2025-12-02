@@ -7,10 +7,14 @@ const geocodingClient = mbxgeoCoding({ accessToken: mapToken });
 
 
 module.exports.index=async (req,res)=>{
-  const allListings=await Listing.find({})
-  // .then((res)=>console.log(res))
-  // .catch(err=>console.log(err))
-  // console.log(allListings)
+  let filter = {};
+  if (req.query.category) {
+    filter.categerory = req.query.category;
+  }
+  if (req.query.country) {
+    filter.country = { $regex: req.query.country, $options: 'i' };
+  }
+  const allListings=await Listing.find(filter)
   res.render("listings/index",{allListings})
 }
 module.exports.renderNewForm=(req,res)=>{
@@ -118,7 +122,13 @@ module.exports.renderEditForm=async (req,res)=>{
   
   let resizedimg= orginalimg.replace("/upload","/upload/ar_1.0,c_fill,w_300,h_250/bo_5px_solid_lightblue")
   
-  res.render("listings/edit.ejs",{listtoedit,resizedimg})
+  res.render("listings/edit.ejs",{listtoedit,resizedimg, hideSearch: true})
+};
+
+module.exports.suggestions = async (req, res) => {
+  const q = req.query.q || '';
+  const countries = await Listing.distinct('country', { country: new RegExp(q, 'i') });
+  res.json(countries);
 };
 
 module.exports.updateListing=async(req,res)=>{

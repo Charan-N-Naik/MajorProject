@@ -117,68 +117,68 @@
     <div id="filters">
         
 
-        <div class="filter">
+        <div class="filter" onclick="filterByCategory('Treanding')">
             <div><i class="fa-solid fa-fire-flame-simple"></i></div>
             <p>Trending</p>
         </div>
 
-        <div class="filter">
+        <div class="filter" onclick="filterByCategory('Rooms')">
             <div><i class="fa-solid fa-bed"></i></div>
             <p>Rooms</p>
         </div>
 
-        <div class="filter">
+        <div class="filter" onclick="filterByCategory('Iconic Cities')">
             <div><i class="fa-solid fa-city"></i></div>
             <p>Iconic Cities</p>
         </div>
 
-        <div class="filter">
+        <div class="filter" onclick="filterByCategory('Mountain')">
             <div><i class="fa-solid fa-mountain-sun"></i></div>
             <p>Mountain</p>
         </div>
 
-        <div class="filter">
+        <div class="filter" onclick="filterByCategory('Camping')">
             <div><i class="fa-solid fa-campground"></i></div>
             <p>Camping</p>
         </div>
 
-        <div class="filter">
+        <div class="filter" onclick="filterByCategory('Castle')">
             <div><i class="fa-solid fa-tower-observation"></i></div>
             <p>Castle</p>
         </div>
 
-        <div class="filter">
+        <div class="filter" onclick="filterByCategory('Pools')">
             <div><i class="fa-solid fa-water-ladder"></i></div>
             <p>Pools</p>
         </div>
 
-        <div class="filter">
+        <div class="filter" onclick="filterByCategory('Farms')">
             <div><i class="fa-solid fa-tractor"></i></div>
             <p>Farms</p>
         </div>
 
-        <div class="filter">
+        <div class="filter" onclick="filterByCategory('Arctic')">
             <div><i class="fa-regular fa-snowflake"></i></div>
             <p>Arctic</p>
         </div>
 
-        <div class="filter">
+        <div class="filter" onclick="filterByCategory('Beach')">
             <div><i class="fa-solid fa-umbrella-beach"></i></div>
             <p>Beach</p>
         </div>
 
        
 
-        <div class="filter">
+        <div class="filter" onclick="filterByCategory('Desert')">
             <div><i class="fa-solid fa-sun"></i></div>
             <p>Deserts</p>
         </div>
 
-        <div class="filter">
+        <div class="filter" onclick="filterByCategory('Forest')">
             <div><i class="fa-solid fa-tree"></i></div>
             <p>Forest</p>
         </div>
-        <div class="filter">
+        <div class="filter" onclick="filterByCategory('Sports')">
             <div><i class="fa-solid fa-football"></i></div>
             <p>Sports</p>
         </div>
@@ -228,4 +228,8 @@
         }
        
     })
+
+    function filterByCategory(category) {
+        window.location.href = `/listing?category=${encodeURIComponent(category)}`;
+    }
 </script>
