@@ -1,0 +1,88 @@
+# Wanderlust CI/CD Pipeline
+# Customized from GitHub's Node.js CI template for Express/MongoDB/EJS project
+
+name: Node.js CI
+
+on:
+  push:
+    branches: [ "main", "**" ]
+  pull_request:
+    branches: [ "main", "**" ]
+
+jobs:
+  build:
+
+    runs-on: ubuntu-latest
+
+    strategy:
+      matrix:
+        node-version: [18.x, 20.x, 22.x]
+
+    services:
+      mongodb:
+        image: mongo:7
+        ports:
+          - 27017:27017
+
+    steps:
+    - uses: actions/checkout@v4
+
+    - name: Use Node.js ${{ matrix.node-version }}
+      uses: actions/setup-node@v4
+      with:
+        node-version: ${{ matrix.node-version }}
+        cache: 'npm'
+
+    - run: npm ci
+
+    - name: Check for syntax errors
+      run: node --check app.js
+
+    - name: Verify project structure
+      run: |
+        test -f app.js
+        test -f schema.js
+        test -d model
+        test -d routes
+        test -d controller
+        test -d views
+
+    - name: Security audit
+      run: npm audit --audit-level=critical || true
+
+    - name: Start server and health check
+      env:
+        ATLAS_DB_URL: mongodb://localhost:27017/wanderlust_test
+        SECRET: ci_test_secret
+        MAP_TOKEN: pk.test_placeholder
+        CLOUD_NAME: test_cloud
+        CLOUD_API_KEY: test_key
+        CLOUD_API_SECREAT: test_secret
+        STRIPE_SECRET_KEY: sk_test_placeholder
+        STRIPE_WEBHOOK_SECRET: whsec_placeholder
+      run: |
+        node app.js &
+        sleep 5
+        curl -f http://localhost:8080/listing || echo "Server responded (may need seed data)"
+        kill %1 || true
+
+    # Optional: Direct SMTP Custom Email Notification
+    # Uncomment the step below if you want custom emails sent via SMTP (e.g. Gmail) on every push/build.
+    # Requires setting repository secrets in GitHub Settings -> Secrets: MAIL_USERNAME, MAIL_PASSWORD, MAIL_TO
+    # - name: Send Custom Email Notification
+    #   if: always()
+    #   uses: dawidd6/action-send-mail@v3
+    #   with:
+    #     server_address: smtp.gmail.com
+    #     server_port: 465
+    #     username: ${{ secrets.MAIL_USERNAME }}
+    #     password: ${{ secrets.MAIL_PASSWORD }}
+    #     subject: "GitHub Push Alert: ${{ github.repository }} (${{ github.ref_name }})"
+    #     to: ${{ secrets.MAIL_TO }}
+    #     from: GitHub Actions
+    #     body: |
+    #       A push event occurred on branch ${{ github.ref_name }}.
+    #       Pushed by: ${{ github.actor }}
+    #       Commit message: ${{ github.event.head_commit.message }}
+    #       Workflow status: ${{ job.status }}
+

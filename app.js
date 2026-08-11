@@ -43,6 +43,8 @@ const listingsRoutes=require("./routes/listing.js")
 const reviewsRoutes=require("./routes/reviews.js")
 // requireing the exoress user router
 const userRoutes=require("./routes/user.js")
+// requireing the booking router
+const bookingRoutes=require("./routes/booking.js")
 
 /// SESSION MONGO STORE
 const session = require("express-session");
@@ -153,6 +155,7 @@ app.use((req,res,next)=>{
   res.locals.error=req.flash("error");
   // console.log(res.locals.success); // this one is the array we need tocheck empty candition also
   res.locals.currUser=req.user;
+  res.locals.currPath = req.path;
   next();
 });
 
@@ -183,6 +186,42 @@ app.use("/",userRoutes);
 app.use("/listing",listingsRoutes);
 // useing the review routers
 app.use("/listings/:id/reviews",reviewsRoutes)
+// useing the booking routers
+app.use("/listing/:id",bookingRoutes);
+
+// Stripe Webhook Endpoint
+const stripe = require("stripe")(process.env.STRIPE_SECRET_KEY || "sk_test_placeholder");
+const Booking = require("./model/booking");
+app.post("/payment/webhook", express.raw({ type: "application/json" }), async (req, res) => {
+  const sig = req.headers["stripe-signature"];
+  let event;
+
+  try {
+    event = stripe.webhooks.constructEvent(req.body, sig, process.env.STRIPE_WEBHOOK_SECRET);
+  } catch (err) {
+    console.error("Webhook Error:", err.message);
+    return res.status(400).send(`Webhook Error: ${err.message}`);
+  }
+
+  if (event.type === "checkout.session.completed") {
+    const session = event.data.object;
+    try {
+      const booking = new Booking({
+        listing: session.metadata.listingId,
+        guest: session.metadata.userId,
+        paymentIntentId: session.payment_intent,
+        amount: session.amount_total / 100,
+        status: "completed"
+      });
+      await booking.save();
+      console.log("Successfully saved booking in DB:", session.metadata.listingId);
+    } catch (dbErr) {
+      console.error("Database save error inside webhook:", dbErr);
+    }
+  }
+
+  res.json({ received: true });
+});
 // refere express website under router
 //mergeParams	Preserve the req.params values from the parent router(/listings/:id/reviews). If the parent and the child have conflicting param names, the child’s value take precedence.
 // defout mergeParams is False

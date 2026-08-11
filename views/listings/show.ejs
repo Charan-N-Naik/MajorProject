@@ -17,6 +17,12 @@
                 <p class="card-text"> &#8377; <%=list.price.toLocaleString("en-IN")%>/nigth  </p>
                 <p class="card-text"><%= list.location%> </p>
                 <p class="card-text"><%= list.country %> </p>
+                <% if (!currUser || !currUser._id.equals(list.owner._id)) { %>
+                    <hr>
+                    <form action="/listing/<%= list._id %>/checkout" method="POST" class="mt-3">
+                        <button class="btn btn-danger w-100">Book & Pay with Stripe</button>
+                    </form>
+                <% } %>
             </div>
         </div>
     </div>

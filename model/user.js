@@ -5,7 +5,9 @@ const userSchema=mongoose.Schema({
     email:{
         type:String,
         required:true
-    }
+    },
+    otp: String,
+    otpExpires: Date
 })
 // ✔ username field
 // ✔ password hashing
